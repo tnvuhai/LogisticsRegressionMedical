@@ -7,6 +7,8 @@ from sklearn.linear_model import LogisticRegression
 import statsmodels.api as sm
 from sklearn.metrics import confusion_matrix
 import math
+import warnings
+warnings.filterwarnings("ignore")
 
 #Read Data and show the corelation matrix of Data
 dataset = pd.read_excel("DataSet.xlsx")
