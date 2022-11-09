@@ -28,9 +28,29 @@ classifier = LogisticRegression(random_state = 6, fit_intercept = True)
 classifier.fit(X_train, y_train)
 
 #Train model and print result
-logit_model = sm.Logit(y_train,X_train)
-result = logit_model.fit()
-print(result.summary())
+logit_model = sm.Logit(y_train, X_train)
+result = logit_model.fit(disp=0)
+# display(result.summary())
+
+while (True):
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    logit_model = sm.Logit(y_train, X_train)
+    result = logit_model.fit(disp=0)
+
+    x3ZValue = result.tvalues[2]
+    x5ZValue = result.tvalues[4]
+
+    x3Coef = result.params[2]
+    x5Coef = result.params[4]
+    if ((abs(x3ZValue) > 1.96 and abs(x5ZValue) < 1.96) and (x3Coef > 0 and x5Coef > 0)):
+        IntroString = """
+            Run LOOP till satistfied the condition:
+                x3 > 0 and |z| < 1.96
+                x5 > 0 and |z| > 1.96
+        """
+        print(IntroString)
+        print(result.summary())
+        break
 
 #Print model Evaluation
 y_pred = classifier.predict(X_test)
