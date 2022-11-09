@@ -45,8 +45,8 @@ while (True):
     if ((abs(x3ZValue) > 1.96 and abs(x5ZValue) < 1.96) and (x3Coef > 0 and x5Coef > 0)):
         IntroString = """
             Run LOOP till satistfied the condition:
-                x3 > 0 and |z| < 1.96
-                x5 > 0 and |z| > 1.96
+                x3 > 0 and |z| > 1.96
+                x5 > 0 and |z| < 1.96
         """
         print(IntroString)
         print(result.summary())
