@@ -23,7 +23,7 @@ x = dataset.iloc[:, [1,2,3,4,5,6,7,8]].values
 # output
 y = dataset.iloc[:,0].values
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(dataset[["gos","training2","creadit3","capital","gender","experience","age","education"]], dataset["qd"], test_size = 0.2, random_state = 0)
 classifier = LogisticRegression(random_state = 6, fit_intercept = True)
 classifier.fit(X_train, y_train)
 
@@ -81,7 +81,7 @@ result = logit_model.fit(disp=0)
 runningLimit = int(input("Please input running times for searching the expected result:"))
 runningTime = 0
 while(True):
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(dataset[["gos","training2","creadit3","capital","gender","experience","age","education"]], dataset["qd"], test_size=0.05)
     logit_model = sm.Logit(y_train, X_train)
     result = logit_model.fit(disp=0)
     Check = 0
@@ -93,10 +93,16 @@ while(True):
     # If Check passed 8 tests
     if (Check == 8):
         print(result.summary())
-        TargetDataFrameTrain = pd.DataFrame(X_train, columns=["GOS", "training2", "creadit3", "capital", "gender", "experience",
-                                                     "age", "education"])
+        TargetDataFrameTrain = pd.DataFrame(X_train, columns=["gos", "training2", "creadit3", "capital", "gender", "experience",
+                                                     "age", "education","STT"])
         TargetDataFrameTrain.insert(8, "qd", y_train, True)
-        TargetDataFrameTrain.to_excel("RequestedTraindata.xlsx")
+        TargetDataFrameTrain.to_excel("Traindata.xlsx")
+
+        TargetDataFrameTest = pd.DataFrame(X_test,
+                                            columns=["gos", "training2", "creadit3", "capital", "gender", "experience",
+                                                     "age", "education"])
+        TargetDataFrameTest.insert(8, "qd", y_test, True)
+        TargetDataFrameTest.to_excel("Testdata.xlsx")
         break
     runningTime += 1
     if(runningTime == runningLimit):
