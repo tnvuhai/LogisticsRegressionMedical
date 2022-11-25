@@ -94,7 +94,7 @@ while(True):
     if (Check == 8):
         print(result.summary())
         TargetDataFrameTrain = pd.DataFrame(X_train, columns=["gos", "training2", "creadit3", "capital", "gender", "experience",
-                                                     "age", "education","STT"])
+                                                     "age", "education"])
         TargetDataFrameTrain.insert(8, "qd", y_train, True)
         TargetDataFrameTrain.to_excel("Traindata.xlsx")
 
