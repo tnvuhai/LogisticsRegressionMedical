@@ -12,20 +12,21 @@ warnings.filterwarnings("ignore")
 
 #Read Data and show the corelation matrix of Data
 dataset = pd.read_excel("DataSet.xlsx")
+q_low = dataset["age"].quantile(0.05)
+q_hi  = dataset["age"].quantile(0.95)
+dataset = dataset[(dataset["age"] < q_hi) & (dataset["age"] > q_low)]
+
 corr = dataset.corr()
 hm = sns.heatmap(corr, annot = True)
 hm.set(xlabel='\nMedical Columns', ylabel='Medical columns\t', title = "Correlation matrix of data\n")
 plt.savefig("Correlation matrix of data.png")
 
-# input
-x = dataset.iloc[:, [1,2,3,4,5,6,7,8]].values
+# Change the columns as followed list
+ColumnsName = ["gos","training2","creadit3","capital","gender","experience","age","education"]
+LenOfColumnList = len(ColumnsName)
 
-# output
-y = dataset.iloc[:,0].values
+X_train, X_test, y_train, y_test = train_test_split(sm.add_constant(dataset[ColumnsName]), dataset["qd"], test_size = 0.05, random_state = 0)
 
-X_train, X_test, y_train, y_test = train_test_split(dataset[["gos","training2","creadit3","capital","gender","experience","age","education"]], dataset["qd"], test_size = 0.2, random_state = 0)
-classifier = LogisticRegression(random_state = 6, fit_intercept = True)
-classifier.fit(X_train, y_train)
 
 def ConvertCondition(string):
     string = string.lower()
@@ -38,11 +39,11 @@ def ConvertCondition(string):
 
 Check = 0
 def CheckCondition():
-    for i in range(0,8):
+    for i,j in zip(range(LenOfColumnList),range(1,LenOfColumnList+1)):
         stringC1 = FinalCondition[i][0]
         stringC2 = FinalCondition[i][1]
         Scondition = f"""
-if(x{i}Coef {stringC1} 0 and x{i}ZValue {stringC2} 1.96):
+if(x{j}Coef {stringC1} 0 and x{j}ZValue {stringC2} 1.96):
     Check += 1
         """
         exec(Scondition, globals())
@@ -61,7 +62,7 @@ input this: +, yes
 """
 print(IntroString)
 FinalCondition = []
-for i in range(1,9):
+for i in range(1,LenOfColumnList+1):
     exec(f"""
 while(True):
     Condition = ConvertCondition(input("Input condition of x{i}:")) 
@@ -76,32 +77,28 @@ while(True):
 logit_model = sm.Logit(y_train, X_train)
 result = logit_model.fit(disp=0)
 
-
-
 runningLimit = int(input("Please input running times for searching the expected result:"))
 runningTime = 0
 while(True):
-    X_train, X_test, y_train, y_test = train_test_split(dataset[["gos","training2","creadit3","capital","gender","experience","age","education"]], dataset["qd"], test_size=0.05)
+    X_train, X_test, y_train, y_test = train_test_split(sm.add_constant(dataset[ColumnsName]), dataset["qd"], test_size=0.05)
     logit_model = sm.Logit(y_train, X_train)
     result = logit_model.fit(disp=0)
     Check = 0
-    for i in range(8):
+    for i in range(1, LenOfColumnList+1):
         exec(f"x{i}ZValue = result.tvalues[{i}]")
-    for i in range(8):
+    for i in range(1, LenOfColumnList+1):
         exec(f"x{i}Coef = result.params[{i}]")
     CheckCondition()
-    # If Check passed 8 tests
-    if (Check == 8):
+    # If Check passed all tests
+    if (Check == LenOfColumnList):
         print(result.summary())
-        TargetDataFrameTrain = pd.DataFrame(X_train, columns=["gos", "training2", "creadit3", "capital", "gender", "experience",
-                                                     "age", "education"])
-        TargetDataFrameTrain.insert(8, "qd", y_train, True)
+        TargetDataFrameTrain = pd.DataFrame(X_train, columns=ColumnsName)
+        TargetDataFrameTrain.insert(LenOfColumnList, "qd", y_train, True)
         TargetDataFrameTrain.to_excel("Traindata.xlsx")
 
         TargetDataFrameTest = pd.DataFrame(X_test,
-                                            columns=["gos", "training2", "creadit3", "capital", "gender", "experience",
-                                                     "age", "education"])
-        TargetDataFrameTest.insert(8, "qd", y_test, True)
+                                            columns=ColumnsName)
+        TargetDataFrameTest.insert(LenOfColumnList, "qd", y_test, True)
         TargetDataFrameTest.to_excel("Testdata.xlsx")
         break
     runningTime += 1
@@ -110,9 +107,9 @@ while(True):
         break
 
 #Print model Evaluation
-y_pred = classifier.predict(X_test)
+y_pred = result.predict(X_test)
+y_pred = y_pred.apply(lambda x: 1 if x > 0.5 else 0)
 qd = confusion_matrix(y_test, y_pred)
 qd = pd.DataFrame(qd)
 print("\nConfusion Matrix : \n", qd)
-print(f"\nAccuracy of training: {classifier.score(X_train, y_train)}")
-print(f"\nAccuracy of testing: {classifier.score(X_test, y_test)}")
+
